@@ -1,0 +1,6 @@
+- name: OCM login
+  shell: ocm login --token {{ TOKEN }}
+
+- name: Create API Access TOKEN
+  shell: 'echo "Bearer $(ocm token)"'
+  register: API_TOKEN

@@ -1,0 +1,114 @@
+
+- name: Set next boot to PXE
+  shell: "{{ IPMI }} chassis bootdev pxe"
+  
+- name: Booting Server
+  shell: "{{ IPMI }} power reset"
+
+- name: "[AI] console url"
+  debug:
+    msg: "Follow the installation via console https://console.redhat.com/openshift/assisted-installer/clusters/{{ CLUSTER_ID }}"
+  
+  
+#- name: "Waiting For Host to Register to AI ( Max 15 Min )"
+#  uri:
+#    url: "{{ API_URL }}/v1/clusters/{{ CLUSTER_ID }}/hosts"
+#    method: GET
+#    headers: 
+#      Accept: application/json
+#      Content-Type: application/json
+#      Authorization: "{{ API_TOKEN.stdout }}"
+#    follow_redirects: all
+#    return_content: yes
+#    status_code: "200"
+#  register: _result
+#  until: _result.json[0] is defined
+#  retries: 90  
+#  delay: 10
+#
+#- name: "Patch Hostname"
+#  uri:
+#    url: "{{ API_URL }}/v2/infra-envs/{{ _result.json[0].infra_env_id }}/hosts/{{ _result.json[0].id}}"
+#    method: PATCH
+#    body: '{ "host_name": "{{ CLUSTER_NAME }}-1" }'
+#    headers: 
+#      Accept: application/json
+#      Content-Type: application/json
+#      Authorization: "{{ API_TOKEN.stdout }}"
+#    body_format: json
+#    follow_redirects: all
+#    return_content: yes
+#    status_code: "201"
+#  retries: 30  
+#  delay: 10
+#
+#- name: "Add kernel Param for Console Fix "
+#  uri:
+#    url: "{{ API_URL }}/v2/clusters/{{ CLUSTER_ID }}/manifests"
+#    method: POST
+#    body: "{{ lookup('template', '99_master_kernel_arg.j2')}}"
+#    headers: 
+#      Accept: application/json
+#      Content-Type: application/json
+#      Authorization: "{{ API_TOKEN.stdout }}"
+#    body_format: json
+#    follow_redirects: all
+#    return_content: yes
+#    status_code: "201"
+#  retries: 30  
+#  delay: 10
+#
+#- name: Set next boot to HDD
+#  shell: "{{ IPMI }} chassis bootdev disk"
+#
+#- name: Starting installation
+#  uri:
+#    url: "{{ API_URL }}/v1/clusters/{{ CLUSTER_ID }}/actions/install"
+#    method: POST
+#    headers: 
+#      Accept: application/json
+#      Content-Type: application/json
+#      Authorization: "{{ API_TOKEN.stdout }}"
+#    body_format: json
+#    follow_redirects: all
+#    return_content: yes
+#    status_code: "202"
+#  register: _installation_ready
+#  until: _installation_ready.status == 202
+#  retries: 10
+#  delay: 10 
+#
+#  
+#- name: "[AI] Waiting for installation to be completed  ( Max 50 Min )" 
+#  uri:
+#    url: "{{ API_URL }}/v1/clusters/{{ CLUSTER_ID }}"
+#    method: GET
+#    headers: 
+#      Accept: application/json
+#      Content-Type: application/json
+#      Authorization: "{{ API_TOKEN.stdout }}"
+#    follow_redirects: all
+#    return_content: yes
+#    status_code: "200"
+#  register: _result
+#  until: _result.json.status == "installed"
+#  retries: 90
+#  delay: 60  
+#
+#- name: "Get Kubeconfig" 
+#  uri:
+#    url: "{{ API_URL }}/v2/clusters/{{ CLUSTER_ID }}/downloads/credentials?file_name=kubeconfig"
+#    method: GET
+#    headers:
+#      accept: "application/octet-stream"
+#      Authorization: "{{ API_TOKEN.stdout }}"
+#    follow_redirects: all
+#    return_content: yes
+#    status_code: "200"
+#    dest: "~/kubeconfig-{{ CLUSTER_ID }}"
+#
+#- name: Installation completed
+#  debug:
+#    msg: "installation completed. use export KUBECONFIG=~/kubeconfig-{{ CLUSTER_ID }} to interact with the cluster"
+#
+#

@@ -1,0 +1,20 @@
+- name: "Get {{ INTERFACE }} connections"
+  shell: |
+    nmcli connection show  | grep -v prov-{{ INTERFACE }} | awk   '{ if ($4 == "{{ INTERFACE }}" )  print $1;}'
+  register: _CON_NAME
+
+- name: "Ensure {{ INTERFACE }} not set"
+  nmcli:
+    conn_name: "{{ _CON_NAME.stdout  }}"
+    ifname: "{{ INTERFACE }}"
+    state: absent
+  when: _CON_NAME.stdout != ""
+
+
+- name: Add an Ethernet connection with static IP configuration
+  nmcli:
+    conn_name: "prov-{{ INTERFACE }}"
+    ifname: "{{ INTERFACE }}"
+    type: ethernet
+    ip4: "{{ DHCP_ROUTER }}/{{ MACHINE_PREFIX }}"
+    state: present

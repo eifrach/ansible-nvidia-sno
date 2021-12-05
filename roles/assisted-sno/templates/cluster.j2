@@ -1,0 +1,45 @@
+{
+  "name": "{{ CLUSTER_NAME }}",
+  "openshift_version": "{{ CLUSTER_VERSION  }}",
+  "ocp_release_image": "quay.io/openshift-release-dev/ocp-release:{{ CLUSTER_VERSION }}-{{ ARCH }}",
+  "base_dns_domain": "{{ CLUSTER_DOMAIN }}",
+  "cluster_network_cidr": "{{ CLUSTER_CIDR }}",
+  "cluster_network_host_prefix": {{ CLUSTER_PREFIX }},
+  "service_network_cidr": "{{ SERVICE_CIDR }}",
+  "ingress_vip": "",
+  "vip_dhcp_allocation": false,
+  "http_proxy": "",
+  "https_proxy": "",
+  "no_proxy": "",
+  "user_managed_networking": true,
+  "additional_ntp_source": "{{ DHCP_NTP }}",
+  "olm_operators": [],
+  "hyperthreading": "all",
+  "network_type": "OVNKubernetes",
+  "high_availability_mode": "None",
+  "schedulable_masters": false,
+  "cluster_networks": [
+    {
+      "cidr": "{{ CLUSTER_CIDR  }}",
+      "host_prefix": {{ CLUSTER_PREFIX }}
+    }
+  ],
+  "service_networks": [
+    {
+      "cidr": "{{ SERVICE_CIDR  }}"
+    }
+  ],
+  "machine_networks": [
+    {
+      "cidr": "{{ DHCP_SUBNET  }}/{{ MACHINE_PREFIX }}"
+    }
+  ],
+  "platform": {
+    "type": "baremetal",
+    "vsphere": {}
+  },
+  "cpu_architecture": "{{ ARCH  }}",
+  "disk_encryption": {},
+  "pull_secret": {{ PULL_SECRET.stdout }},
+  "ssh_public_key": "{{ SSH_PUB_KEY.stdout }}"
+}

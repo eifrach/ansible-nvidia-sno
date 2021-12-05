@@ -1,0 +1,2 @@
+[assisted-sno-server]
+server  ansible_host="host_name" ansible_user="host_user"

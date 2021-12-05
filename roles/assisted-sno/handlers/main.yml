@@ -1,0 +1,23 @@
+---
+# handlers file for nodes-prep
+- name: Restart http Server
+  service:
+    name: httpd
+    state: restarted
+    enabled: yes
+  become: yes
+
+- name: Restart DHCP Server
+  service:
+    name: dhcpd
+    state: restarted
+    enabled: yes
+  become: yes
+
+- name: Restart TFTP Server
+  service:
+    name: tftp
+    daemon_reload: yes
+    state: restarted
+    enabled: yes
+  become: yes

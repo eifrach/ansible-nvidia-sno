@@ -1,0 +1,80 @@
+---
+#################################################
+## Needed configurations for playbook
+## Mendatory 
+#################################################
+
+### OCM token to create API KEY
+### can be created at https://console.redhat.com/openshift/token
+TOKEN: ""
+
+### BMC information for Bluefield card
+BMC_ADDRESS: ""
+BMC_USER: ""
+BMC_PASSWORD: ""
+
+### (Mandatory) set PullSecret created for Redhat
+### can be downloaded from: "https://console.redhat.com/openshift/install/pull-secret"
+### note this file should be located on the localhost and NOT the remote node 
+PULL_SECRET_FILE: ""
+
+INTERFACE: ""
+#################################################
+## All available variables and the default values
+## Optional 
+#################################################
+
+
+### Directory for  HTTPD
+HTTP_DIR: "/var/www/html/pxe"
+
+
+### Directory for TFTPD ( PXE boot )
+TFTP_DIR: "/var/lib/tftpboot"
+
+
+# Networking and DHCP Configurations
+
+DHCP_SUBNET: "10.255.255.0"
+DHCP_NETMASK: "255.255.255.0"
+DHCP_RANGE: "10.255.255.1 10.255.255.10"
+DHCP_ROUTER: "10.255.255.254"
+DHCP_DNS: "10.19.143.247"
+DHCP_NTP: "clock.redhat.com"
+
+### Assisted Installer API URL
+API_URL: "https://api.openshift.com/api/assisted-install"
+
+### OCM tool to use with Autentication to AI  API
+### not needed on DEV enviorments
+OCM_VERSION: "0.1.59"
+
+### Cluster Version that will be created
+CLUSTER_VERSION: '4.9.0'
+
+### Images size to be Genrated "minimal-iso" or "full-iso"
+### Full iso size ~= 800MB
+### Minimal sizq ~=  95MB
+IMAGE_TYPE: 'minimal-iso'
+
+### Cluster Name and Domain
+CLUSTER_NAME: 'master-sno'
+CLUSTER_DOMAIN: 'example.com'
+
+# Networking configuration for the Cluster
+CLUSTER_CIDR: '10.128.0.0/14'
+CLUSTER_PREFIX: '23'
+SERVICE_CIDR: '172.30.0.0/16'
+MACHINE_PREFIX: '24'
+
+### Public key that will be used 
+### note this key should be located on the localhost and NOT the remote node 
+SSH_PUB_KEY_FILE: "~/.ssh/id_rsa.pub"
+
+### CPU architecture, for Nvidia cards this should be set to "arm64" 
+### or x86_64
+ARCH: arm64
+
+### configurations for ISO 
+DOWNLOADED_ISO: "{{ CLUSTER_NAME }}-{{ CLUSTER_VERSION }}-{{ ARCH }}.iso"
+MNT_EFIBOOT: "/mnt/efiboot"

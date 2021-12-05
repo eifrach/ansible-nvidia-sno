@@ -1,0 +1,46 @@
+---
+# tasks file for nodes-prep
+- name: Check Variables are configured
+  fail:
+    msg: "Variable {{ item.name }} is not configured"
+  when: item.value|length == 0
+  loop:
+    - { name: "TOKEN", value: "{{ TOKEN }}" }
+    - { name: "INTERFACE", value: "{{ INTERFACE }}" }
+    - { name: "BMC_ADDRESS", value: "{{ BMC_ADDRESS }}" }
+    - { name: "BMC_USER", value: "{{ BMC_USER }}" }
+    - { name: "BMC_PASSWORD", value: "{{ BMC_PASSWORD }}" }
+    - { name: "PULL_SECRET_FILE", value: "{{ PULL_SECRET_FILE }}" }
+  tags: always
+
+- name: Setup Network Interfaces
+  include: 00_setup_network.yml
+  tags: network
+
+- name: Check If Token exsist 
+  fail: 
+    msg: "TOKEN var is not defined"
+  when: TOKEN is not defined
+  tags: always
+
+- name: Installing dependencies 
+  include: 01_install_deps.yml
+  tags: deps
+
+- name: creating IPMI command
+  set_fact:
+    IPMI: "ipmitool -H {{ BMC_ADDRESS }} -U {{ BMC_USER }} -P {{ BMC_PASSWORD }}  -I lanplus"
+  tags: install
+
+- name: Power Down Server
+  shell: "{{ IPMI }} power off"
+  tags: install
+
+- name: Deploy Cluster
+  include: 02_deploy_cluster.yml
+  tags: install
+
+
+
+
+

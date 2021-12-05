@@ -1,0 +1,66 @@
+- name: Install required packages
+  yum:
+    name:
+      - jq
+      - ipmitool
+      - httpd
+      - dhcp-server
+      - tftp-server
+    state: present
+  become: yes
+
+- name: Download ocm-cli with check (sha256)
+  get_url:
+    url: https://github.com/openshift-online/ocm-cli/releases/download/v{{ OCM_VERSION }}/ocm-linux-amd64
+    dest: /usr/bin/ocm
+    mode: 775
+    checksum: sha256:https://github.com/openshift-online/ocm-cli/releases/download/v{{ OCM_VERSION }}/ocm-linux-amd64.sha256
+  become: yes
+
+
+- name: Create HTTP Directory
+  file:
+    path: "{{ HTTP_DIR }}"
+    state: directory
+    owner: apache
+    group: apache
+  become: yes
+
+- name: Create HTTP config file
+  template:
+    src: pxeboot.j2
+    dest: /etc/httpd/conf.d/pxeboot.conf
+    owner: apache
+    group: apache
+  become: yes
+  notify: Restart http Server
+
+- name: Create DHCP config
+  template:
+    src: dhcpd.j2
+    dest: /etc/dhcp/dhcpd.conf
+  become: yes
+  notify: Restart DHCP Server
+
+- name: Create TFTP Directory
+  file:
+    path: "{{ TFTP_DIR }}"
+    state: directory
+    owner: root
+    group: root
+  become: yes
+
+- name: Creating Grub Config
+  template:
+    src: grub.j2
+    dest: "{{ TFTP_DIR }}/grub.cfg"
+  become: yes
+
+- name: configure TFTP service
+  template:
+    src:  tftp.service.j2
+    dest: /usr/lib/systemd/system/tftp.service
+  become: yes
+  notify: Restart TFTP Server
+
+

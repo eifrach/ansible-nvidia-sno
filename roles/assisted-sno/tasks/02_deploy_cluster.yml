@@ -1,0 +1,155 @@
+- name: Get API token
+  include: get_token.yml
+  when: API_TOKEN is not defined
+
+- name: Get Public key
+  shell: "cat {{ SSH_PUB_KEY_FILE }}"
+  register: SSH_PUB_KEY
+  delegate_to: localhost
+
+- name: Get Pull Secret
+  shell: "cat {{ PULL_SECRET_FILE }} | jq -c '.' | jq -Rs '.'  "
+  register: PULL_SECRET
+  delegate_to: localhost
+
+- name: Render template
+  template:
+    src: cluster.j2
+    dest: /tmp/cluster.json 
+
+- name: Read Cluster json
+  slurp:
+    src: /tmp/cluster.json
+  register: CLUSTER_JSON
+
+- name: "[AI] Create Cluster"
+  uri:
+    url: "{{ API_URL }}/v1/clusters/"
+    method: POST
+    body: "{{  CLUSTER_JSON.content | b64decode | from_json }}"
+    headers: 
+      Accept: application/json
+      Content-Type: application/json
+      Authorization: "{{ API_TOKEN.stdout }}"
+    body_format: json
+    follow_redirects: all
+    return_content: yes
+    status_code: "201"
+  register: CREATED_CLUSTER
+
+- name: Setting Cluster paramters 
+  set_fact:
+    ISO_JSON: "{{ lookup('template', 'generate_iso.j2')}}"
+    CLUSTER_ID: "{{  CREATED_CLUSTER.content | from_json | json_query('id') }}"
+
+- name: "[AI] Generate ISO"
+  uri:
+    url: "{{ API_URL }}/v1/clusters/{{ CLUSTER_ID }}/downloads/image"
+    method: POST
+    body: "{{ ISO_JSON }}"
+    headers: 
+      Accept: application/json
+      Content-Type: application/json
+      Authorization: "{{ API_TOKEN.stdout }}"
+    body_format: json
+    follow_redirects: all
+    return_content: yes
+    status_code: "201"
+  register: CREATED_ISO
+
+- name: Downloading ISO
+  get_url:
+    url: "{{ CREATED_ISO.content | from_json | json_query('image_info.download_url')  }}"
+    dest: "/tmp/{{ DOWNLOADED_ISO }}"
+
+- name: Extract files from a ISO
+  iso_extract:
+    image: "/tmp/{{ DOWNLOADED_ISO }}"
+    dest: "{{ TFTP_DIR }}"
+    files:
+    - images/pxeboot/initrd.img
+    - images/pxeboot/vmlinuz
+    - images/ignition.img
+    - images/efiboot.img
+  become: yes
+
+- name: Create Mount point 
+  file:
+    path: "{{ MNT_EFIBOOT }}"
+    state: directory
+    owner: root
+    group: root
+  become: yes
+
+- name: Mount efiboot image
+  mount:
+    path: "{{ MNT_EFIBOOT }}"
+    src: "{{ TFTP_DIR }}/efiboot.img"
+    fstype: vfat
+    state: mounted
+
+- name: Copy boot files to TFTP
+  copy:
+    src: "{{ MNT_EFIBOOT }}/EFI/BOOT/{{ item }}"
+    dest: "{{ TFTP_DIR }}/{{ item }}"
+    remote_src: true
+    owner: root
+    group: root
+  become: yes
+  loop:
+    - BOOTAA64.EFI
+    #- mmaa64.efi
+    #- shimaa64.efi
+    - grubaa64.efi
+
+- name: Release Mount
+  mount:
+    path: "{{ MNT_EFIBOOT }}"
+    src: "{{ TFTP_DIR }}/efiboot.img"
+    state: absent
+
+
+- name: "[ full-iso ] Extract rootfs.img from a ISO"
+  iso_extract:
+    image: "/tmp/{{ DOWNLOADED_ISO }}"
+    dest: "{{ item }}"
+    files:
+    - images/pxeboot/rootfs.img
+  become: yes
+  loop:
+    - "{{ TFTP_DIR }}"
+    - "{{ HTTP_DIR }}"
+  when: IMAGE_TYPE == "full-iso"
+
+- name: "[ minimal-iso ] getting boot info"
+  iso_extract:
+    image: "/tmp/{{ DOWNLOADED_ISO }}"
+    dest: "{{ TFTP_DIR }}"
+    files:
+    - isolinux/isolinux.cfg
+  become: yes
+  when: IMAGE_TYPE == "minimal-iso"
+
+- name: "[ minimal-iso ] Downloading rootfs.img"
+  shell: |
+    URL=$(cat {{ TFTP_DIR }}/isolinux.cfg  | grep -o 'coreos.live.rootfs_url=.*' | cut -f2- -d"=")
+    curl $URL --output  {{ TFTP_DIR }}/rootfs.img
+    cp {{ TFTP_DIR }}/rootfs.img {{ HTTP_DIR }}/rootfs.img
+    rm -f {{ TFTP_DIR  }}/isolinux.cfg 
+  become: yes
+  when: IMAGE_TYPE == "minimal-iso"
+
+- name: Creating Ignition files
+  shell: |
+    CONFIG=/{{ HTTP_DIR }}/config.ign
+    echo '{' >  $CONFIG
+    zcat  {{ TFTP_DIR }}/ignition.img | sed '1d; $d'  >>  $CONFIG
+    echo '}' >> $CONFIG
+    chown apache: $CONFIG 
+  become: yes
+
+- name: Starting Host deploymnet
+  include: 03_host_deployment.yml
+
+
+
