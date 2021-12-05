@@ -65,5 +65,6 @@ ansible-playbook playbook.yaml
 1. when re-running the playbook it creates a new cluster and does not use the previous cluster. This is because the cluster name and/or domain can be duplicated and only separated by the `CLUSTER_ID`
  
 2. on the production AI, while waiting for the cluster to be installed it fails, due to the `API_TOKEN` timeout.
+
  
- 
+3. CPU Architecture `X86_64` not working, due different PXE files created in ISO 
