@@ -44,7 +44,7 @@ PULL_SECRET_FILE: ""
 ### Assisted Installer API URL
 # API_URL: "https://api.openshift.com/api/assisted-install"
 
-API_URL: "http://edge-11.edge.lab.eng.rdu2.redhat.com:6000/api/assisted-install"
+
 ### OCM tool to use with Autentication to AI  API
 ### not needed on DEV enviorments
 # OCM_VERSION: "0.1.59"
