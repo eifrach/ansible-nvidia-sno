@@ -1,12 +1,14 @@
 # Assisted Installer SNO 
+This  Ansible is used to deploy SNO clusters on remote nodes. The default CPU arch used is `arm64`. 
+ 
 
-This  Ansible is used to deploy SNO cluster on remote node. The default CPU arch used is `arm64`.  
 
 ## The Setup
-This ansible Run's on a `jump host` in the enviorment, There is setup all the required services to boot pxe hosts ( DHCP, HTTP and TFTP).  
+This ansible Run's on a `jump host` in the environment, There is setup all the required services to boot pxe hosts ( DHCP, HTTP and TFTP). 
 The deployed node **must** be in the same network as the jump host in order for `DHCP` to boot PXE the node.
+ 
+The `PULL_SECRET_FILE` and `SSH_PUB_KEY_FILE` are delegated to the local host therefore, the files should be located on the same host running the ansible.
 
-The `PULL_SECRET_FILE` and `SSH_PUB_KEY_FILE` is delegated to local host therefor, the files should be located on the same host running the ansible. 
 
 ## Configurations
 
@@ -48,7 +50,8 @@ sed -i 's/TOKEN: ""/TOKEN: "$TOKEN"/g;
 echo 'API_URL: "http://my.dev.server:6000/api/assisted-install"' >> vars.yaml 
 ```
 > Note:  
-> When using the dev environment the token is still being used but no authentication is required. this is set for backward compatibility to production api.
+> When using the dev environment the token is still being used but no authentication is required. This is set for backward compatibility to the production api.
+ 
 
 
 ### Running playbook
@@ -59,8 +62,8 @@ ansible-playbook playbook.yaml
 
 
 ### Known Issues:
-1. when re-running the playbook it creates a new cluster and not using the previous cluster. This is because the cluster name and/or domain can be duplicated and only seperated by the `CLUSTER_ID`
-
-2. on the production AI, while waiting for the cluster to be installed it fails, due to the `API_TOKEN` timeout. 
-
-
+1. when re-running the playbook it creates a new cluster and does not use the previous cluster. This is because the cluster name and/or domain can be duplicated and only separated by the `CLUSTER_ID`
+ 
+2. on the production AI, while waiting for the cluster to be installed it fails, due to the `API_TOKEN` timeout.
+ 
+ 
