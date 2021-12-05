@@ -1,2 +1,0 @@
-[assisted-sno-server]
-server  ansible_host="test-host" ansible_user="kni"
