@@ -19,7 +19,8 @@ ANSIBLE_USER="kni"
 
 
 cp inventory/hosts.sample inventory/hosts
-sed -i 's/host_name/$ANSIBLE_HOST/g;s/host_user/$ANSIBLE_USER/g' inventory/hosts
+sed -i "s/host_name/$ANSIBLE_HOST/g; \
+        s/host_user/$ANSIBLE_USER/g" inventory/hosts
 ```
 
 ### 2. Set Variable
@@ -27,22 +28,25 @@ there are a few mandatory variable needed to be configured
 you can use the "vars-sample.yml" to get all the avilable vars and default values
 
 ```bash
-BMC_ADDRESS: "10.10.10.10"
-BMC_USER: "bmc_user"
-BMC_PASSWORD: "very_secret_password"
+BMC_ADDRESS="10.10.10.10"
+BMC_USER="bmc_user"
+BMC_PASSWORD="very_secret_password"
 
-TOKEN: "some random string"
+INTERFACE="eth0"
+### The provisioning interface which will issue DHCP / PXE Services
+TOKEN="some random string"
 ### can be created at https://console.redhat.com/openshift/token
 
-PULL_SECRET_FILE: "/path/to/pull_secret"
+PULL_SECRET_FILE="/path/to/pull_secret"
 ### can be downloaded from: "https://console.redhat.com/openshift/install/pull-secret"
 
 cp vars-sample.yaml vars.yaml
-sed -i 's/TOKEN: ""/TOKEN: "$TOKEN"/g;
-        s/PULL_SECRET_FILE: ""/PULL_SECRET_FILE: "$PULL_SECRET_FILE"/g;
-        s/BMC_ADDRESS: ""/BMC_ADDRESS: "$BMC_ADDRESS"/g;
-        s/BMC_USER: ""/BMC_USER: "$BMC_USER"/g;
-        s/BMC_PASSWORD: ""/BMC_PASSWORD: "$BMC_PASSWORD"/g;' vars.yaml
+sed -i "s#TOKEN.*#TOKEN: $TOKEN#g; \
+        s#PULL_SECRET_FILE.*#PULL_SECRET_FILE: $PULL_SECRET_FILE#g; \
+        s#BMC_ADDRESS:.*#BMC_ADDRESS: $BMC_ADDRESS#g; \
+        s#BMC_USER:.*#BMC_USER: $BMC_USER#g; \
+        s#BMC_PASSWORD:.*#BMC_PASSWORD: $BMC_PASSWORD#g; \
+        s#INTERFACE.*#INTERFACE: $INTERFACE#g" vars.yaml
 ```
 
 **optional**: you can use Assisted Installer Dev API by updating the default value

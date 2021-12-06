@@ -18,6 +18,8 @@ BMC_PASSWORD: ""
 ### note this file should be located on the localhost and NOT the remote node 
 PULL_SECRET_FILE: ""
 
+
+INTERFACE: ""
 ################################################
 ## All available variables and the default values
 ## Optional 
@@ -33,7 +35,6 @@ PULL_SECRET_FILE: ""
 
 
 ### Networking and DHCP Configurations
-# INTERFACE: "eno2"
 # DHCP_SUBNET: "10.255.255.0"
 # DHCP_NETMASK: "255.255.255.0"
 # DHCP_RANGE: "10.255.255.1 10.255.255.10"
